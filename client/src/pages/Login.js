@@ -1,22 +1,20 @@
 import React, { useState } from "react";
-import { Link, Redirect, useHistory } from "react-router-dom";
+import {Redirect, useHistory } from "react-router-dom";
 import { useAuth } from "../utils/auth";
 import { Form, InputGroup } from "../components/LoginForm";
 import Button from 'react-bootstrap/Button';
-import Container from "../components/Container";
-import Row from 'react-bootstrap/Row';
-import Col from 'react-bootstrap/Col';
 import Badge from 'react-bootstrap/Badge';
 import Card from 'react-bootstrap/Card';
 import './LoginForm.css';
+import swal from 'sweetalert';
 
-const loginStyle = {
+/* const loginStyle = {
   display: "flex",
   justifyContent: "center",
   flexDirection: "column",
   maxWidth: "20rem",
   margin: "0 auto",
-};
+}; */
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -28,6 +26,8 @@ function Login() {
     return <Redirect to="/" />;
   }
 
+
+
   const handleFormSubmit = (event) => {
     event.preventDefault();
 
@@ -35,7 +35,13 @@ function Login() {
       // navigate to the profile page
       .then(() => history.push("/profile"))
       .catch((err) => {
-        alert(err.response.data.message);
+        // alerting user incorrect username/password
+        swal({
+          title: "Incorrect Email and/or Password!",
+          text: "Please try again or create a new account.",
+          icon: "warning",
+          button: "Back to Log In",
+        });
       });
   };
 

@@ -1,19 +1,23 @@
 /** @format */
 
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import "./style.css";
 import "./arrow.css";
 import API from "../../utils/API";
-import mapImage from "./temp-map.jpg";
 import Button from "react-bootstrap/Button";
-import Map from "./Map";
+import Map from "../Map/Map";
+
+let quizArr = [];
+let answerList = [];
 
 function Quiz() {
   const continent = useParams().continent;
 
   const [country, setCountry] = useState("");
   const [questionCount, setQuestionCount] = useState(1);
+
+  let answerFromMap = {};
 
   const countryArr = useRef(null);
   useEffect(() => {
@@ -22,40 +26,48 @@ function Quiz() {
 
       getRandomCountry();
     });
-
-    //TODO: Make call gto map api to retrieve the map for the given continent
   }, []);
-
-
 
   //Retrieving random country from the array to ask the user.
   function getRandomCountry() {
     const randomCountry =
       countryArr.current[Math.floor(Math.random() * countryArr.current.length)];
-
-    setCountry(randomCountry);
-    setQuestionCount(questionCount + 1);
+    if (quizArr.includes(randomCountry)) {
+      getRandomCountry();
+    } else {
+      if (questionCount <= 5) {
+        quizArr.push(randomCountry);
+      }
+      answerList.push(answerFromMap);
+      setCountry(randomCountry);
+      setQuestionCount(questionCount + 1);
+    }
     //TODO: Add functionality to check for correct answer and record the score
   }
-  
+
+  const saveResults = (answer) => {
+    answerFromMap = answer;
+  };
 
   return (
-    <div className="container mt-5">
-      <div className="row text-center  mr-3">
-        <div className="col-sm-12 title-container p-3">
+    <div className="container mt-5 p-4">
+      <div className="row text-center title-container">
+        <div className="col-sm-12">
           <h2 className="continent-heading">{continent}</h2>
         </div>
       </div>
-      <div className="row quiz-form-container pt-5">
+      <div className="row pt-5">
         <div className="col-sm-4">
-          <p className="question-container">Where is {country}</p>
-        </div>
-        <div className="col-sm-4 map-container">
-          <Map />    
-        </div>
-        <div className="col-sm-4">
-          Click your Answer on the Map
-          <div className="row click-container mb-5">
+          {/* 3 rows of elements */}
+          <div className="row">
+            {questionCount <= 6 ? (
+              <p className="question-container">Where is {country}?</p>
+            ) : (
+              <p className="question-container">Quiz Done</p>
+            )}
+          </div>
+          <div className="row mb-5 click-container">
+            Click your Answer on the Map
             <div id="arrowAnim">
               <div className="arrowSliding">
                 <div className="arrow"></div>
@@ -71,8 +83,8 @@ function Quiz() {
               </div>
             </div>
           </div>
-          <div className="row next-container m-5 p-5">
-            {questionCount <= 5 ? (
+          <div className="row next-container m-4">
+            {questionCount <= 6 ? (
               <Button
                 type="button"
                 className="btn btn-danger btn-lg"
@@ -81,15 +93,23 @@ function Quiz() {
                 <h3>NEXT QUESTION</h3>
               </Button>
             ) : (
-                <Button
-                  type="button"
-                  className="btn btn-danger btn-lg"
-                  href="/results"
-                >
-                  <h3>VIEW RESULTS</h3>
-                </Button>
-              )}
+              <Link
+                to={{
+                  pathname: `/results/${continent}`,
+                  resultProps: { countryList: quizArr, resultList: answerList },
+                }}
+              >
+                View Results
+              </Link>
+            )}
           </div>
+        </div>
+        <div className="col-sm-8 map-container p-2">
+          <Map
+            continent={continent}
+            country={country}
+            saveResult={saveResults}
+          />
         </div>
       </div>
     </div>
